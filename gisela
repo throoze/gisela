@@ -1,0 +1,200 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# ------------------------------------------------------------
+# gisela
+#
+# Lexer para el lenguaje Gisela
+# Julio Lopez (06-39821)
+# Victor De Ponte (05-38087)
+# ------------------------------------------------------------
+import ply.lex as lex
+import ply.yacc as yacc
+from ply.lex import TOKEN
+import sys
+import re
+
+# Lista de palabras reservadas del lenguaje Gisela
+reserved = {
+  'go':'TkGo',
+  'og':'TkOg',
+  'char':'TkChar',
+  'bool':'TkBool',
+  'int':'TkInt',
+  'chr':'TkChr',
+  'ord':'TkOrd',
+  'isupper':'TkIsup',
+  'isalpha':'TkIsal',
+  'isdigit':'TkIsdig',
+  'isspace':'TkIsspa',
+  'xor':'TkXor',
+  'and':'TkAnd',
+  'or':'TkOr',
+  'not':'TkNot',
+  'div':'TkDiv',
+  'mod':'TkMod',
+  'skip':'TkSkip',
+  'abort':'TkAbort',
+  'read':'TkRead',
+  'print':'TkPrint',
+  'return':'TkReturn',
+  'if':'TkIf',
+  'fi':'TkFi',
+  'do':'TkDo',
+  'od':'TkOd',
+  'proc':'TkProc',
+  'var':'TkVar',
+  }
+
+# Lista de nombres de los tokens del lenguaje Gisela
+
+tokens = [ 'TkLets', 'TkCaracter', 'TkTrue', 'TkFalse', 'TkPotencia',
+           'TkProducto', 'TkSuma', 'TkResta', 'TkMenor', 'TkMenorIgual',
+           'TkComillaSimple', 'TkMayor', 'TkMayorIgual', 'TkIgual', 'TkDesIgual'
+           , 'TkAsignacion', 'TkParAbre', 'TkParCierra', 'TkGuardia', 'TkIdent',
+           'TkNumero', 'TkComentario', 'TkComa', 'TkPipe', 'TkSecuenciador',
+           'TkMsg',
+           ] + list(reserved.values())
+
+# Expresión regular para la palabra reservada "let's"
+def t_TkLets(t):
+    r'let\'s'
+    return t
+
+def t_TkTrue(t):
+    r'(T|t)((R|r)((U|u)((E|e))?)?)?'
+    return t
+
+def t_TkFalse(t):
+    r'(F|f)((A|a)((L|l)((S|s)((E|e))?)?)?)?'
+    return t
+
+# Definiendo las expresiones regulares simples del lenguaje Gisela
+t_TkComillaSimple = r'\''
+t_TkPotencia = r'\*\*'
+t_TkProducto = r'\*'
+t_TkSuma = r'\+'
+t_TkResta = r'-'
+t_TkMenor = r'<'
+t_TkMenorIgual = r'<='
+t_TkMayor = r'>'
+t_TkMayorIgual = r'=>'
+t_TkIgual = r'=='
+t_TkDesIgual = r'!='
+t_TkAsignacion = r':='
+t_TkParAbre = r'\('
+t_TkParCierra = r'\)'
+t_TkGuardia = r'->'
+t_TkComa = r','
+t_TkPipe = r'\|'
+t_TkSecuenciador = r';'
+t_TkMsg = r'("[^"\\n]*")|(\'[^\'\\n]*\')'
+# Se diseño el token Msg y el token Caracter de esta forma pensando en que no
+# deberían aceptarse cosas como esta " ads" as" como parte de un mensaje o algo
+# como esto ''' como un caracter. Para el caso de que la variable char sea
+# inicializada en ' pensamos que debería usarse comillas dobles o underscore
+# algo como "'" o _'. (En la consulta habla solo de las cadenas, pero esta
+# aclaración aplica para los char también por eso se incluye como comentario en
+# el código.
+
+# Expresion regular para los numeros del lenguaje Gisela
+def t_TkNumero(t):
+    r'\d+'
+    if int(t.value) > 2**31-1:
+        t.value = str(long(t.value))
+        t.errormsg = "Gisela solo permite enteros almacenables en 32 bits. El numero:\n'" + t.value + "'\nexcede los 32 bits. Utilize numeros menores o iguales a " + str(2**31-1) + "."
+        t.escadena = True
+        t_error(t)
+    t.value = int(t.value)
+    return t
+
+# Expresion regular para los caracteres del lenguaje Gisela
+def t_TkCaracter(t):
+    r'("[^"]")|(\'[^\']\')|(_.)'
+    return t
+
+# Definicion de un comentario
+def t_TkComentario(t):
+    r'//.*\n'
+    t.lexer.lineno += 1
+
+# Definicion de un identificador de variable
+def t_TkIdent(t):
+    r'[a-zA-Z][a-zA-Z0-9]*'
+    t.type = reserved.get(t.value,'TkIdent')    # Chequea por las palabras
+    return t                                    # reservadas
+
+# Rastreo de numeros de linea
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
+# Computa las columnas.
+def find_column(input,t):
+    last_cr = input.rfind('\n',0,t.lexpos)
+    if last_cr < 0:
+        last_cr = 0
+    column = (t.lexpos - (last_cr + 1))
+    if column < 0:
+        column = 0
+    return column
+
+# Caracteres a ser ignorados
+t_ignore  = ' \t'
+
+# Definimos flag global para indicar que hay errores lexicos
+lexerror = 0
+
+# Manejador de Errores
+def t_error(t):
+    global lexerror
+    lexerror = 1
+    if hasattr(t, 'escadena'):
+        unespected = "cadena de caracteres inesperada"
+    else:
+        unespected = "caracter inesperado"
+    if hasattr(t, 'errormsg'):
+        print "Error: %s '%s' en la fila '%d', columna '%d'.\n%s\n" %(unespected,t.value,t.lineno,find_column(data,t),t.errormsg)
+    else:
+        print "Error: %s '%s' en la fila '%d', columna '%d'\n" %(unespected,t.value[0],t.lineno,find_column(data,t))
+    t.lexer.skip(1)
+
+# Se construye el lexer
+lexer = lex.lex()
+
+# Le pasa la entrada al lexer
+argc = len(sys.argv)
+if argc < 2 :
+    print ("GiSeLa:\nError: Debe ingresar el nombre del archivo a procesar")
+    exit()
+elif argc > 2 :
+    print ("GiSeLa:\nError: Ud introdujo parámetros de más. Debe ingresar"
+           +" sólo el nombre del archivo a procesar.")
+    exit()
+# p = re.compile('\w*\.gsl')
+# if not p.match(sys.argv[1]) :
+#     print ("GiSeLa:\nError: El archivo a procesar debe tener la extensión"
+#            +" '.gsl'")
+#     exit()
+try:
+    archi=open(sys.argv[1],'r')
+except Exception, e:
+    print ("GiSeLa:\nError: No se pudo abrir el archivo\n\t'"
+           + sys.argv[1] + "'\nExcepción:")
+    print unicode(e)
+    exit()
+data=archi.read()
+archi.close()
+lexer.input(data)
+output = ""
+
+# Tokenizador
+while True:
+    tok = lexer.token()
+    if not tok: break
+    output = (output + str(tok.type) + " " + '"' + str(tok.value) + '"' + " "
+    + "(Linea " + str(tok.lineno) + "," + " Columna "
+    + str(find_column(data,tok)) + ")" + "\n")
+
+# En caso de que existan caracteres ilegales los tokens no son mostrados
+if lexerror == 0:
+  print output

@@ -1,0 +1,16 @@
+int variable, va1, v2; //comentario 0
+char caras;
+proc pro1(int a, var char b)
+    char c1;
+    int i0,i1;
+    i0 := 0;
+let's go //esto es un comentario
+caras := 'w';
+variable := 40;
+if variable > 40 -> skip
+| variable < 40 -> abort
+| variable == 40 -> va1 := variable + 1
+fi;
+print "esto es lo que hay" v2;
+pro1(v2, caras)
+og // comentario final
