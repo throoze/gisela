@@ -1,4 +1,12 @@
+# Ignoro los archivos basura
 *~
 *#*#*
 .#*
+
+# Ignoro la libreria ply
 ply*
+
+# Ignoro los archivos generados por ply
+*parser.out
+*parsetab.py
+*parsetab.pyc
