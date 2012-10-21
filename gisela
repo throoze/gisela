@@ -184,17 +184,234 @@ except Exception, e:
     exit()
 data=archi.read()
 archi.close()
-lexer.input(data)
-output = ""
 
 # Tokenizador
-while True:
-    tok = lexer.token()
-    if not tok: break
-    output = (output + str(tok.type) + " " + '"' + str(tok.value) + '"' + " "
-    + "(Linea " + str(tok.lineno) + "," + " Columna "
-    + str(find_column(data,tok)) + ")" + "\n")
-
+# lexer.input(data)
+# output = ""
+# while True:
+#     tok = lexer.token()
+#     if not tok: break
+#     output = (output + str(tok.type) + " " + '"' + str(tok.value) + '"' + " "
+#     + "(Linea " + str(tok.lineno) + "," + " Columna "
+#     + str(find_column(data,tok)) + ")" + "\n")
 # En caso de que existan caracteres ilegales los tokens no son mostrados
-if lexerror == 0:
-  print output
+# if lexerror == 0:
+#   print output
+
+######################## Hasta aqui el lexer ##########################
+
+# Reglas de la gramática. Inicio del parser:
+def p_program(p):
+    ''' program : def main def '''
+    pass
+
+def p_def(p):
+    ''' def : defvar
+            | defproc
+            | empty '''
+    pass
+
+def p_defvar(p):
+    ''' defvar : type lid TkSecuenciador
+               | empty '''
+    pass
+
+def p_lid(p):
+    ''' lid : TkIdent
+            | lid TkComa TkIdent '''
+    pass
+
+def p_type(p):
+    ''' type : TkChar
+             | TkBool
+             | TkInt '''
+    pass
+
+def p_defproc(p):
+    ''' defproc : TkProc TkIdent TkParAbre larg TkParCierra defvar ins '''
+    pass
+
+def p_larg(p):
+    ''' larg : arg
+             | larg TkComa arg
+             | empty '''
+    pass
+
+def p_arg(p):
+    ''' arg : tvar type TkIdent '''
+    pass
+
+def p_tvar(p):
+    ''' tvar : TkVar
+             | empty '''
+    pass
+
+def p_main(p):
+    ''' main : TkLets block '''
+    pass
+
+def p_block(p):
+    ''' block : TkGo lins TkOg '''
+    pass
+
+def p_ins(p):
+    ''' ins : inst
+            | block '''
+    pass
+
+def p_lins(p):
+    ''' lins : inst
+             | lins TkSecuenciador inst '''
+    pass
+
+def p_inst(p):
+    ''' inst : simple
+             | guarded
+             | block
+             | selector
+             | repeat '''
+    pass
+
+def p_simple(p):
+    ''' simple : asign
+               | io
+               | proc
+               | TkSkip
+               | TkAbort
+               | TkReturn '''
+    pass
+
+def p_asign(p):
+    ''' asign : TkIdent TkAsignacion exp
+              | TkIdent TkComa asign TkComa exp '''
+    pass
+
+def p_exp(p):
+    ''' exp : boolexp
+            | arexp
+            | char '''
+    pass
+
+def p_boolexp(p):
+    ''' boolexp : TkTrue
+                | TkFalse
+                | TkIdent
+                | boolexp boolop boolexp
+                | TkNot boolexp
+                | arexp comp arexp
+                | char comp char
+                | isop char '''
+    pass
+
+def p_boolop(p):
+    ''' boolop : TkXor
+               | TkAnd
+               | TkOr '''
+    pass
+
+def p_comp(p):
+    ''' comp : TkMayor
+             | TkMayorIgual
+             | TkMenor
+             | TkMenorIgual
+             | TkIgual
+             | TkDesIgual '''
+    pass
+
+def p_arexp(p):
+    ''' arexp : arexp TkSuma term
+              | arexp TkResta term
+              | term '''
+    pass
+
+def p_term(p):
+    ''' term : term TkProducto factor
+             | factor '''
+    pass
+
+def p_factor(p):
+    ''' factor : factor TkDiv div
+               | factor TkMod div
+               | div '''
+    pass
+
+def p_div(p):
+    ''' div : div TkPotencia pow
+            | pow '''
+    pass
+
+def p_pow(p):
+    ''' pow : TkNumero
+            | TkIdent
+            | TkOrd char
+            | TkParAbre arexp TkParCierra
+            | TkResta arexp '''
+    pass
+
+def p_char(p):
+    ''' char : TkCaracter
+             | TkIdent
+             | TkChr arexp '''
+    pass
+
+def p_isop(p):
+    ''' isop : TkIsup
+             | TkIsal
+             | TkIsdig
+             | TkIsspa '''
+    pass
+
+def p_io(p):
+    ''' io : TkRead msg TkIdent
+           | TkPrint msg exp '''
+    pass
+
+def p_msg(p):
+    ''' msg : TkMsg
+            | empty '''
+    pass
+
+def p_proc(p):
+    ''' proc : TkIdent TkParAbre lexp TkParCierra '''
+    pass
+
+def p_lexp(p):
+    ''' lexp : exp
+             | lexp TkComa exp '''
+    pass
+
+def p_guarded(p):
+    ''' guarded : guard inst '''
+    pass
+
+def p_guard(p):
+    ''' guard : boolexp TkGuardia
+              | empty '''
+    pass
+
+def p_selector(p):
+    ''' selector : TkIf lguarded TkFi '''
+    pass
+
+def p_lguarded(p):
+    ''' lguarded : guarded
+                 | lguarded TkPipe guarded '''
+    pass
+
+def p_repeat(p):
+    ''' repeat : TkDo lguarded TkOd '''
+    pass
+
+def p_empty(p):
+    ''' empty : '''
+    pass
+
+# Error rule for syntax errors
+def p_error(p):
+    print "Syntax error in input!"
+
+# Build the parser
+parser = yacc.yacc()
+
+result = parser.parse(data)
+#print result
