@@ -38,7 +38,6 @@ reserved = {
   'print':'TkPrint',
   'return':'TkReturn',
   'if':'TkIf',
-  'fi':'TkFi',
   'do':'TkDo',
   'od':'TkOd',
   'proc':'TkProc',
@@ -47,12 +46,12 @@ reserved = {
 
 # Lista de nombres de los tokens del lenguaje Gisela
 
-tokens = [ 'TkLets', 'TkCaracter', 'TkTrue', 'TkFalse', 'TkPotencia',
+tokens = [ 'TkLets', 'TkMsg', 'TkCaracter', 'TkTrue', 'TkFalse', 'TkPotencia',
            'TkProducto', 'TkSuma', 'TkResta', 'TkMenor', 'TkMenorIgual',
-           'TkComillaSimple', 'TkMayor', 'TkMayorIgual', 'TkIgual', 'TkDesIgual'
-           , 'TkAsignacion', 'TkParAbre', 'TkParCierra', 'TkGuardia', 'TkIdent',
-           'TkNumero', 'TkComentario', 'TkComa', 'TkPipe', 'TkSecuenciador',
-           'TkMsg',
+           'TkMayor', 'TkMayorIgual', 'TkIgual','TkFi',
+           'TkDesIgual', 'TkAsignacion', 'TkParAbre', 'TkParCierra',
+           'TkGuardia', 'TkIdent', 'TkNumero', 'TkComentario', 'TkComa',
+           'TkPipe', 'TkSecuenciador' #, 'TkComillaSimple'
            ] + list(reserved.values())
 
 # Expresión regular para la palabra reservada "let's"
@@ -60,8 +59,29 @@ def t_TkLets(t):
     r'let\'s'
     return t
 
+# Expresion regular para los caracteres del lenguaje Gisela
+def t_TkCaracter(t):
+    r'("[^"]")|(\'[^\']\')|(_.)'
+    return t
+
+# Se diseño el token Msg y el token Caracter de esta forma pensando en que no
+# deberían aceptarse cosas como esta " ads" as" como parte de un mensaje o algo
+# como esto ''' como un caracter. Para el caso de que la variable char sea
+# inicializada en ' pensamos que debería usarse comillas dobles o underscore
+# algo como "'" o _'. (En la consulta habla solo de las cadenas, pero esta
+# aclaración aplica para los char también por eso se incluye como comentario en
+# el código.
+def t_TkMsg(t):
+    r'("(\\"|[^"])*")|(\'(\\\'|[^\'])*\')'
+    #r'(?:"(?:[^"\\n\\r\\\\]|(?:"")|(?:\\\\x[0-9a-fA-F]+)|(?:\\\\.))*")|(?:\'(?:[^\'\\n\\r\\\\]|(?:\'\')|(?:\\\\x[0-9a-fA-F]+)|(?:\\\\.))*\')'
+    return t
+
 def t_TkTrue(t):
     r'(T|t)((R|r)((U|u)((E|e))?)?)?'
+    return t
+
+def t_TkFi(t):
+    r'fi'
     return t
 
 def t_TkFalse(t):
@@ -69,7 +89,7 @@ def t_TkFalse(t):
     return t
 
 # Definiendo las expresiones regulares simples del lenguaje Gisela
-t_TkComillaSimple = r'\''
+#t_TkComillaSimple = r'\''
 t_TkPotencia = r'\*\*'
 t_TkProducto = r'\*'
 t_TkSuma = r'\+'
@@ -87,14 +107,6 @@ t_TkGuardia = r'->'
 t_TkComa = r','
 t_TkPipe = r'\|'
 t_TkSecuenciador = r';'
-t_TkMsg = r'("[^"\\n]*")|(\'[^\'\\n]*\')'
-# Se diseño el token Msg y el token Caracter de esta forma pensando en que no
-# deberían aceptarse cosas como esta " ads" as" como parte de un mensaje o algo
-# como esto ''' como un caracter. Para el caso de que la variable char sea
-# inicializada en ' pensamos que debería usarse comillas dobles o underscore
-# algo como "'" o _'. (En la consulta habla solo de las cadenas, pero esta
-# aclaración aplica para los char también por eso se incluye como comentario en
-# el código.
 
 # Expresion regular para los numeros del lenguaje Gisela
 def t_TkNumero(t):
@@ -107,14 +119,9 @@ def t_TkNumero(t):
     t.value = int(t.value)
     return t
 
-# Expresion regular para los caracteres del lenguaje Gisela
-def t_TkCaracter(t):
-    r'("[^"]")|(\'[^\']\')|(_.)'
-    return t
-
 # Definicion de un comentario
 def t_TkComentario(t):
-    r'//.*\n'
+    r'(//.*[\n\z])'
     t.lexer.lineno += 1
 
 # Definicion de un identificador de variable
@@ -194,26 +201,192 @@ archi.close()
 #     output = (output + str(tok.type) + " " + '"' + str(tok.value) + '"' + " "
 #     + "(Linea " + str(tok.lineno) + "," + " Columna "
 #     + str(find_column(data,tok)) + ")" + "\n")
-# En caso de que existan caracteres ilegales los tokens no son mostrados
+#En caso de que existan caracteres ilegales los tokens no son mostrados
 # if lexerror == 0:
-#   print output
-
+#     print output
+#print output
 ######################## Hasta aqui el lexer ##########################
+
+# Gramática legible:
+# program     : ldef main ldef
+
+# ldef        : def
+#             | ldef def
+#             | empty
+
+# def         : defvar
+#             | defproc
+
+# defvar      : defv TkSecuenciador
+
+# defv        : type lid
+
+# lid         : TkIdent
+#             | lid TkComa TkIdent
+
+# type        : TkChar
+#             | TkBool
+#             | TkInt
+
+# defproc     : TkProc TkIdent TkParAbre larg TkParCierra ldefvar instordef
+
+# larg        : empty
+#             | arg
+#             | larg TkComa arg
+
+# arg         : tvar type TkIdent
+
+# tvar        : tkVar
+#             | empty
+
+# ldefvar     : empty
+#             | defvar
+#             | ldefvar defvar
+
+# instordef   : inst
+#             | defvar
+
+# main        : TkLets block
+
+# block       : TkGo previnst lastinst TkOg
+
+# previnst    : linstanddef TkSecuenciador
+#             | empty
+
+# lastinst    : inst
+#             | defvar
+
+# linstanddef : instanddef
+#             | linst TkSecuenciador instanddef
+
+# instanddef  : inst
+#             | defv
+
+# inst        : simple
+#             | guarded
+#             | block
+#             | selector
+#             | repeat
+
+# simple      : TkSkip
+#             | TkAbort
+#             | TkReturn
+#             | asign
+#             | io
+#             | proc
+
+# asign       : TkIdent TkAsignacion exp
+#             | TkIdent TkComa asign TkComa exp
+
+# exp         : boolexp
+#             | arexp
+#             | char
+
+# boolexp     : TkTrue
+#             | TkFalse
+#             | TkIdent
+#             | boolexp boolop boolexp
+#             | TkNot boolexp
+#             | arexp comp arexp
+#             | char comp char
+#             | isop char
+#             | TkParAbre boolexp TkParCierra
+
+# boolop      : TkXor
+#             | TkAnd
+#             | TkOr
+
+# comp        : TkMayor
+#             | TkMayorIgual
+#             | TkMenor
+#             | TkMenorIgual
+#             | TkIgual
+#             | TkDesIgual
+
+# arexp       : arexp TkSuma term
+#             | arexp TkResta term
+#             | term
+
+# term        : term TkProducto factor
+#             | factor
+
+# factor      : factor TkDiv div
+#             | factor TkMod div
+#             | div
+
+# div         : div TkPotencia pow
+#             | pow
+
+# pow         : TkIdent
+#             | TkNumero
+#             | TkOrd char
+#             | TkParAbre arexp TkParCierra
+#             | TkResta arexp
+
+# char        : TkChr arexp
+#             | TkCaracter
+#             | TkIdent
+
+# isop        : TkIsup
+#             | TkIsal
+#             | TkIsdig
+#             | TkIsspa
+
+# io          : TkRead msg TkIdent
+#             | TkPrint msg exp
+
+# msg         : TkMsg
+#             | empty
+
+# proc        : TkIdent TkParAbre lexp TkParCierra
+
+# lexp        : exp
+#             | lexp TkComa exp
+
+# guarded     : boolexp TkGuardia inst
+
+# selector    : TkIf lguarded TkFi
+
+# lguarded    : guarded
+#             | lguarded TkPipe guarded
+
+# repeat      : TkDo lguarded TkOd
+
+# empty       :
+
+
+# Reglas de asociatividad y precedencia:
+precedence = (
+    ('nonassoc','TkMayor','TkMayorIgual','TkMenor','TkMenorIgual','TkIgual','TkDesIgual'),
+    ('left', 'TkSuma', 'TkResta'),
+    ('left', 'TkProducto'),
+    ('right', 'TkDiv', 'TkMod'),
+    ('right', 'UMINUS'),
+    ('right', 'TkPotencia'),
+)
 
 # Reglas de la gramática. Inicio del parser:
 def p_program(p):
-    ''' program : def main def '''
+    ''' program : ldef main ldef '''
+    pass
+
+def p_ldef(p):
+    ''' ldef : def
+             | empty
+             | ldef def'''
     pass
 
 def p_def(p):
     ''' def : defvar
-            | defproc
-            | empty '''
+            | defproc'''
     pass
 
 def p_defvar(p):
-    ''' defvar : type lid TkSecuenciador
-               | empty '''
+    ''' defvar : defv TkSecuenciador'''
+    pass
+
+def p_defv(p):
+    ''' defv : type lid'''
     pass
 
 def p_lid(p):
@@ -228,13 +401,13 @@ def p_type(p):
     pass
 
 def p_defproc(p):
-    ''' defproc : TkProc TkIdent TkParAbre larg TkParCierra defvar ins '''
+    ''' defproc : TkProc TkIdent TkParAbre larg TkParCierra ldefvar instordef'''
     pass
 
 def p_larg(p):
-    ''' larg : arg
-             | larg TkComa arg
-             | empty '''
+    ''' larg : empty
+             | arg
+             | larg TkComa arg '''
     pass
 
 def p_arg(p):
@@ -246,22 +419,43 @@ def p_tvar(p):
              | empty '''
     pass
 
+def p_ldefvar(p):
+    ''' ldefvar : empty
+                | defvar
+                | ldefvar defvar'''
+    pass
+
+def p_instordef(p):
+    ''' instordef : inst
+                  | defvar '''
+    pass
+
 def p_main(p):
     ''' main : TkLets block '''
     pass
 
 def p_block(p):
-    ''' block : TkGo lins TkOg '''
+    ''' block : TkGo previnst lastinst TkOg '''
     pass
 
-def p_ins(p):
-    ''' ins : inst
-            | block '''
+def p_previnst(p):
+    ''' previnst : linstanddef TkSecuenciador
+                 | empty '''
     pass
 
-def p_lins(p):
-    ''' lins : inst
-             | lins TkSecuenciador inst '''
+def p_lastinst(p):
+    ''' lastinst : inst
+                 | defvar '''
+    pass
+
+def p_linstanddef(p):
+    ''' linstanddef : instanddef
+                    | linstanddef TkSecuenciador instanddef '''
+    pass
+
+def p_instanddef(p):
+    ''' instanddef : inst
+                   | defv '''
     pass
 
 def p_inst(p):
@@ -273,12 +467,12 @@ def p_inst(p):
     pass
 
 def p_simple(p):
-    ''' simple : asign
-               | io
-               | proc
-               | TkSkip
+    ''' simple : TkSkip
                | TkAbort
-               | TkReturn '''
+               | TkReturn
+               | asign
+               | io
+               | proc '''
     pass
 
 def p_asign(p):
@@ -300,7 +494,8 @@ def p_boolexp(p):
                 | TkNot boolexp
                 | arexp comp arexp
                 | char comp char
-                | isop char '''
+                | isop char
+                | TkParAbre boolexp TkParCierra '''
     pass
 
 def p_boolop(p):
@@ -341,17 +536,17 @@ def p_div(p):
     pass
 
 def p_pow(p):
-    ''' pow : TkNumero
-            | TkIdent
+    ''' pow : TkIdent
+            | TkNumero
             | TkOrd char
             | TkParAbre arexp TkParCierra
-            | TkResta arexp '''
+            | TkResta arexp %prec UMINUS'''
     pass
 
 def p_char(p):
-    ''' char : TkCaracter
-             | TkIdent
-             | TkChr arexp '''
+    ''' char : TkChr arexp
+             | TkCaracter
+             | TkIdent '''
     pass
 
 def p_isop(p):
@@ -381,12 +576,7 @@ def p_lexp(p):
     pass
 
 def p_guarded(p):
-    ''' guarded : guard inst '''
-    pass
-
-def p_guard(p):
-    ''' guard : boolexp TkGuardia
-              | empty '''
+    ''' guarded : boolexp TkGuardia inst '''
     pass
 
 def p_selector(p):
@@ -408,10 +598,16 @@ def p_empty(p):
 
 # Error rule for syntax errors
 def p_error(p):
-    print "Syntax error in input!"
+    #print unicode(p)
+    if not p:
+        print "Error sintáctico en token no identificado"
+    else:
+        print "Error sintáctico en el token ",p.type," ubicado en la linea ",p.lineno, ", columna ", find_column(data,p)
+    # yacc.errok()
 
 # Build the parser
 parser = yacc.yacc()
 
+#result = parser.parse("let's go print 'wepale' v og ; int v;")
 result = parser.parse(data)
 #print result

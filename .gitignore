@@ -2,6 +2,7 @@
 *~
 *#*#*
 .#*
+*.pyc
 
 # Ignoro la libreria ply
 ply*
