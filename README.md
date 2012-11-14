@@ -1,9 +1,11 @@
 Universidad Simón Bolivar
 
-DEpartamento de Computación y Tecnología de la Información
+Departamento de Computación y Tecnología de la Información
 
 CI-3725 - Traductores e Interpretadores
+
 Autores:
+
         * Victor De Ponte (05-38087)
         * Julio Lopez (06-39821)
 
