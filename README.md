@@ -6,8 +6,8 @@ CI-3725 - Traductores e Interpretadores
 
 Autores:
 
-        * Victor De Ponte (05-38087)
-        * Julio Lopez (06-39821)
+    * Victor De Ponte (05-38087)
+    * Julio Lopez (06-39821)
 
 
 GISELA
