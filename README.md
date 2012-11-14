@@ -13,7 +13,7 @@ Autores:
 GISELA
 ================================================================================
 
-Gisela es un lenguaje imperativo inspirado en GCL [1], con algunos elementos
+Gisela es un lenguaje imperativo inspirado en GCL [[1]](http://en.wikipedia.org/wiki/Guarded_Command_Language), con algunos elementos
 adicionales apropiados para los conceptos que deben aprenderse en este curso.
 
 Puede leer la [definición del lenguaje](http://ldc.usb.ve/~07-40983/ci3725/sd2012/definicion.html)
