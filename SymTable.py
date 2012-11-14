@@ -14,7 +14,7 @@ class SymTable:
     def __init__(self):
         self._table = {}
         
-    def insert(self,nombre,tipo,funcion,funcionExt,bloque,bloqueExt):
+    def insert(self,nombre,tipo,funcion,funcionExt,bloque,bloqueExt): #nombre,tipo,valor,pasaje,bloque,bloqueExt
         if nombre in self._table:
             exito = False
         else:

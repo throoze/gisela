@@ -1,0 +1,52 @@
+bool vT,vF;
+
+proc write(var int x)
+     int y,a;
+     bool a,b;
+     go
+        bool z;
+        z := True;
+        y := x;
+        if z ->
+           write(y)
+        | not z ->
+           write(1)
+        fi
+     og
+
+int i;
+int j;
+int k;
+
+let's go
+   char a,b,c;
+   int d,e;
+   read sdffag;
+   print "l''';lkajnbfdl/.b" wepa;
+   a := 4;
+   b := 5+--6*8**9;
+   c := T;
+   print 'T' a;
+   wepale(s,8+(5+--6*8**9),x >= 9);
+   go
+      int b;
+      b := 42;
+      write(a);
+      if False ->
+         write(x)
+      |  True ->
+         go
+            bool z;
+            read 'a' x;
+            print 'asf"saf"sfd' y
+         og
+      fi
+   og;
+   do x > y ->
+      go
+         write(holamundo);
+         write(lf)
+      og
+   od
+   // Esto es un comentario
+og

@@ -1,0 +1,17 @@
+1. Cada vez que se lee una declaración de variable, se verifica que en ese nivel no este en la tabla. Sino está se introduce en la tabla, si se le dió un valor
+se le guarda con ese valor, de lo contrario se le guarda con el valor por defecto de su tipo. 
+
+----Si luego se le da un valor se modifica esta entrada en la tabla. (Acá sería buscar esa variable en el nivel actual, si está se modifica, sino se busca en el inmediatemente superior hasta que se encuentre).
+
+2.  Para los procedimientos, sus tablas de simbolos checkean también que no hayan variables con el nombre mismo nombre que algun parametro.
+
+##########################
+Para las distintas instacias de las tablas
+
+1. Se tiene una variable global que apunte a la tabla "actual" (en verdad sería una pila y se empila una referencia a la tabla actual). Cada vez que se entre en un bloque se declara una tabla nueva y se apunta a la tabla "actual" como exterior y se pone a esa tabla como la "actual". Cuando se sale del bloque se desempila la ultima referencia.
+
+2. Se tiene una tabla especial para variables goblales. Esta se consultara siempre en cada declaración de variables.
+
+3. La tabla del bloque principal apunta a null.
+
+4. IMPORTANTE: cuando se sale de un bloque (no se bien como delimitar esto todavia, pero es cuando se lee un TkOg) se hace pop de la pila para eliminar ese bloque dado a que no tendra mas bloques internos. Asi el ultimo elemento de la pila ahora es el padre del proximo bloque a crear.
