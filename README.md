@@ -24,148 +24,175 @@ El lenguaje Gisela, está especificado por la gramática a continuación, siendo
 las precedencias y asociatividades de los operadores, las señaladas en la
 definición del lenguaje y en los ajustes, ambos antes mencionados:
 
-    ''' gisela : globaldec main '''
-
-    ''' globaldec : lglobals
-                  | lambda
+    ''' gisela       : globaldec main
     '''
 
-    ''' lglobals : globals
-                 | lglobals globals
+    ''' globaldec    : lglobals
+                     | lambda
     '''
 
-    ''' globals : globvardec
-                | procdef
+    ''' lglobals     : globals
+                     | lglobals globals
     '''
 
-    ''' globvardec : vardec TkSecuenciador
+    ''' globals      : globvardec
+                     | procdef
     '''
 
-    ''' procdef : TkProc TkIdent TkParAbre larg TkParCierra localdec inst
+    ''' globvardec   : vardec TkSecuenciador
     '''
 
-    ''' larg : lambda
-             | args
+    ''' procdef      : TkProc TkIdent TkParAbre larg TkParCierra localdec inst
     '''
 
-    ''' args : arg
-             | args TkComa arg '''
+    ''' larg         : lambda
+                     | args
+    '''
 
-    ''' arg : tvar type TkIdent '''
+    ''' args         : arg
+                     | args TkComa arg
+    '''
 
-    ''' tvar : TkVar
-             | lambda '''
+    ''' arg          : tvar type TkIdent
+    '''
 
-    ''' main : TkLets block '''
+    ''' tvar         : TkVar
+                     | lambda
+    '''
 
-    ''' block : TkGo localdec instructions TkOg '''
+    ''' main         : TkLets block
+    '''
+
+    ''' block        : TkGo localdec instructions TkOg
+    '''
 
     ''' instructions : linst
                      | lambda
     '''
 
-    ''' localdec : localvars TkSecuenciador
-                 | lambda
+    ''' localdec     : localvars TkSecuenciador
+                     | lambda
     '''
 
-    ''' localvars : vardec
-                  | localvars TkSecuenciador vardec
+    ''' localvars    : vardec
+                     | localvars TkSecuenciador vardec
     '''
 
-    ''' vardec : type lid'''
-
-    ''' type : TkChar
-             | TkBool
-             | TkInt '''
-
-    ''' lid : TkIdent
-            | lid TkComa TkIdent '''
-
-    ''' linst : inst
-              | linst TkSecuenciador inst
+    ''' vardec       : type lid
     '''
 
-    ''' inst : simple
-             | block
-             | selector
-             | repeat
+    ''' type         : TkChar
+                     | TkBool
+                     | TkInt
     '''
 
-    ''' simple : TkSkip
-               | TkAbort
-               | TkReturn
-               | asign
-               | io
-               | proc '''
+    ''' lid          : TkIdent
+                     | lid TkComa TkIdent
+    '''
 
-    ''' asign : TkIdent TkAsignacion exp
-              | TkIdent TkComa asign TkComa exp '''
+    ''' linst        : inst
+                     | linst TkSecuenciador inst
+    '''
 
-    ''' exp : boolexp
-            | arexp
-            | char '''
+    ''' inst         : simple
+                     | block
+                     | selector
+                     | repeat
+    '''
 
-    ''' boolexp : TkTrue
-                | TkFalse
-                | TkIdent
-                | boolexp boolop boolexp
-                | TkNot boolexp
-                | arexp comp arexp
-                | char comp char
-                | isop char
-                | TkParAbre boolexp TkParCierra '''
+    ''' simple       : TkSkip
+                     | TkAbort
+                     | TkReturn
+                     | asign
+                     | io
+                     | proc
+    '''
 
-    ''' boolop : TkXor
-               | TkAnd
-               | TkOr '''
+    ''' asign        : TkIdent TkAsignacion exp
+                     | TkIdent TkComa asign TkComa exp
+    '''
 
-    ''' comp : TkMayor
-             | TkMayorIgual
-             | TkMenor
-             | TkMenorIgual
-             | TkIgual
-             | TkDesIgual '''
+    ''' exp          : boolexp
+                     | arexp
+                     | char
+    '''
 
-    ''' arexp : arexp TkSuma arexp
-              | arexp TkResta arexp
-              | arexp TkProducto arexp
-              | arexp TkDiv arexp
-              | arexp TkMod arexp
-              | arexp TkPotencia arexp
-              | TkParAbre arexp TkParCierra
-              | TkIdent
-              | TkNumero
-              | TkOrd char
-              | TkResta arexp %prec UMINUS '''
+    ''' boolexp      : TkTrue
+                     | TkFalse
+                     | TkIdent
+                     | boolexp boolop boolexp
+                     | TkNot boolexp
+                     | arexp comp arexp
+                     | char comp char
+                     | isop char
+                     | TkParAbre boolexp TkParCierra
+    '''
 
-    ''' char : TkChr arexp
-             | TkCaracter
-             | TkIdent '''
+    ''' boolop       : TkXor
+                     | TkAnd
+                     | TkOr
+    '''
 
-    ''' isop : TkIsup
-             | TkIsal
-             | TkIsdig
-             | TkIsspa '''
+    ''' comp         : TkMayor
+                     | TkMayorIgual
+                     | TkMenor
+                     | TkMenorIgual
+                     | TkIgual
+                     | TkDesIgual
+    '''
 
-    ''' io : TkRead msg TkIdent
-           | TkPrint msg TkIdent '''
+    ''' arexp        : arexp TkSuma arexp
+                     | arexp TkResta arexp
+                     | arexp TkProducto arexp
+                     | arexp TkDiv arexp
+                     | arexp TkMod arexp
+                     | arexp TkPotencia arexp
+                     | TkParAbre arexp TkParCierra
+                     | TkIdent
+                     | TkNumero
+                     | TkOrd char
+                     | TkResta arexp %prec UMINUS
+    '''
 
-    ''' msg : TkMsg
-            | TkCaracter
-            | lambda '''
+    ''' char         : TkChr arexp
+                     | TkCaracter
+                     | TkIdent
+    '''
 
-    ''' proc : TkIdent TkParAbre lexp TkParCierra '''
+    ''' isop         : TkIsup
+                     | TkIsal
+                     | TkIsdig
+                     | TkIsspa
+    '''
 
-    ''' lexp : exp
-             | lexp TkComa exp '''
+    ''' io           : TkRead msg TkIdent
+                     | TkPrint msg TkIdent
+    '''
 
-    ''' guarded : boolexp TkGuardia inst '''
+    ''' msg          : TkMsg
+                     | TkCaracter
+                     | lambda
+    '''
 
-    ''' lguarded : guarded
-                 | lguarded TkPipe guarded '''
+    ''' proc         : TkIdent TkParAbre lexp TkParCierra
+    '''
 
-    ''' selector : TkIf lguarded TkFi '''
+    ''' lexp         : exp
+                     | lexp TkComa exp
+    '''
 
-    ''' repeat : TkDo lguarded TkOd '''
+    ''' guarded      : boolexp TkGuardia inst
+    '''
 
-    ''' lambda : '''
+    ''' lguarded     : guarded
+                     | lguarded TkPipe guarded
+    '''
+
+    ''' selector     : TkIf lguarded TkFi
+    '''
+
+    ''' repeat       : TkDo lguarded TkOd
+    '''
+
+    ''' lambda       :
+    '''
